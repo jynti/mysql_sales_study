@@ -80,7 +80,7 @@ mysql> SELECT name
 
 3)
 mysql> SELECT name, max(order_date) AS last_date
-    -> FROM orders JOIN salespersons
+    -> FROM salespersons LEFT JOIN orders
     -> ON orders.salesperson_id=salespersons.id
     -> GROUP BY salesperson_id
     -> HAVING SUBDATE(CURDATE(), 15) > last_date;
