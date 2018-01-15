@@ -95,13 +95,14 @@ mysql> SELECT name, max(order_date) AS last_date
 4 rows in set (0.01 sec)
 
 4)
-mysql> SELECT o1.salesperson_id, o1.amount, s.name
+mysql> SELECT o1.salesperson_id, o1.amount, name
     -> FROM orders AS o1 JOIN orders AS o2
-    -> ON o1.amount >= o2.amount
-    -> JOIN salespersons AS s
-    -> ON o1.salesperson_id=s.id
-    -> GROUP BY o1.amount
-    -> HAVING COUNT(*) = 7;
+    -> JOIN salespersons
+    -> ON o1.salesperson_id=salespersons.id
+    -> GROUP BY o1.amount, o2.amount
+    -> HAVING COUNT(*) >= 1
+    -> ORDER BY o1.amount DESC, o2.amount DESC
+    -> LIMIT 1;
 +----------------+--------+------+
 | salesperson_id | amount | name |
 +----------------+--------+------+
@@ -127,14 +128,16 @@ mysql> SELECT salespersons.name AS salesperson_name, GROUP_CONCAT(DISTINCT custo
 4 rows in set (0.00 sec)
 
 6)
-mysql> SELECT industry_type, COUNT(DISTINCT salesperson_id) AS number_of_salespersons
-    -> FROM customers JOIN orders
-    -> ON customers.id=orders.cust_id
-    -> GROUP BY industry_type;
-+---------------+------------------------+
-| industry_type | number_of_salespersons |
-+---------------+------------------------+
-| B             |                      3 |
-| J             |                      3 |
-+---------------+------------------------+
-2 rows in set (0.00 sec)
+mysql> SELECT salesperson_id, GROUP_CONCAT(distinct industry_type) AS industry_types, SUM(amount) AS total_amount
+    -> FROM orders JOIN customers
+    -> ON orders.cust_id=customers.id
+    -> GROUP BY salesperson_id;
++----------------+----------------+--------------+
+| salesperson_id | industry_types | total_amount |
++----------------+----------------+--------------+
+|              1 | B              |          460 |
+|              2 | J,B            |         2940 |
+|              4 | B,J            |         1470 |
+|              5 | J              |         1800 |
++----------------+----------------+--------------+
+4 rows in set (0.00 sec)
